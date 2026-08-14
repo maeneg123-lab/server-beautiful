@@ -50,3 +50,13 @@ func AddRewiew(w http.ResponseWriter, r *http.Request, dbConn *sql.DB){
     }
     fmt.Fprintf(w, "success! rewiew added!")
 }
+
+
+
+    err = db.AddRewiew(dbConn, username, text, rating, operation)
+    if err!=nil{
+        http.Error(w, "error db:", http.StatusInternalServerError)
+        return
+    }
+    fmt.Fprintf(w, "success! rewiew added!")
+}
