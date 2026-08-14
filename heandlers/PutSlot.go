@@ -1,48 +1,45 @@
 package handlers
 
-import(
-    "strconv"
+import (
     "database/sql"
-    //"encoding/json"
     "fmt"
-    //"log"
     "net/http"
-    //"os"
+    "strconv"
 
-    //"studia-of-biautiful-api/models" // или "weather-go-api/models"
-    "studia-of-biautiful-api/db"     // или "weather-go-api/db"
+    "studia-of-biautiful-api/db"
 )
 
-func PutSlot(w http.ResponseWriter, r *http.Request, dbConn *sql.DB){
-    idstr := r.URL.Query().Get("id")
-    if idstr == ""{
-        http.Error(w, "error, id no", http.StatusBadRequest)
+func PutSlot(w http.ResponseWriter, r *http.Request, dbConn *sql.DB) {
+    // 1. Получаем client_id
+    clientIDStr := r.URL.Query().Get("client_id")
+    if clientIDStr == "" {
+        http.Error(w, "error: client_id is required", http.StatusBadRequest)
+        return
+    }
+    clientID, err := strconv.ParseInt(clientIDStr, 10, 64)
+    if err != nil {
+        http.Error(w, "error: client_id must be a number", http.StatusBadRequest)
         return
     }
 
-    id,err:=strconv.ParseInt(idstr, 10,64)
-    if err!=nil{
-        http.Error(w, "error, id not int", http.StatusBadRequest)
+    // 2. Получаем slot_id
+    slotIDStr := r.URL.Query().Get("slot_id")
+    if slotIDStr == "" {
+        http.Error(w, "error: slot_id is required", http.StatusBadRequest)
+        return
+    }
+    slotID, err := strconv.ParseInt(slotIDStr, 10, 64)
+    if err != nil {
+        http.Error(w, "error: slot_id must be a number", http.StatusBadRequest)
         return
     }
 
-    slot_idstr := r.URL.Query().Get("id")
-    if idstr == ""{
-        http.Error(w, "error, slot_id no", http.StatusBadRequest)
+    // 3. Вызываем функцию из db
+    err = db.PutSlot(dbConn, clientID, slotID)
+    if err != nil {
+        http.Error(w, "error db: "+err.Error(), http.StatusInternalServerError)
         return
     }
 
-    slot_id,err:=strconv.ParseInt(slot_idstr, 10,64)
-    if err!=nil{
-        http.Error(w, "error, slot_id not int", http.StatusBadRequest)
-        return
-    }
-
-
-    err = db.PutSlot(dbConn,id, slot_id)
-    if err!=nil{
-        http.Error(w, "error db:", http.StatusInternalServerError)
-        return
-    }
-    fmt.Fprintf(w, "success! slot appdated!")
+    fmt.Fprintf(w, "success! slot updated!")
 }
